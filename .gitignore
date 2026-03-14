@@ -1,1 +1,16 @@
+# secrets
+.env.local
+.env.*.local
+
+# next build
+.next
 node_modules
+
+# mac
+.DS_Store
+
+# editor
+.vscode
+
+# internal docs (optional)
+data/pdfs
