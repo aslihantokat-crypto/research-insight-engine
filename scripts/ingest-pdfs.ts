@@ -1,6 +1,10 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import fs from "node:fs/promises";
 import path from "node:path";
+
+// Load .env.local so ingest uses the same env as Next.js (dotenv/config only loads .env)
+dotenv.config({ path: path.join(process.cwd(), ".env.local") });
+dotenv.config();
 import { embedText } from "../lib/embeddings";
 import { createClient } from "@supabase/supabase-js";
 import { PDFParse } from "pdf-parse";
@@ -18,6 +22,17 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const PDF_INPUT_DIR = path.join(process.cwd(), "data", "pdfs");
+
+/** Log underlying cause of a fetch/network error so we can diagnose. */
+function logInsertError(file: string, index: number, err: { message?: string; cause?: unknown }) {
+  const cause = (err as { cause?: { message?: string; code?: string } }).cause;
+  const detail = cause
+    ? ` (cause: ${cause.code ?? "unknown"} ${cause.message ?? ""})`.trim()
+    : "";
+  console.error(
+    `Failed to insert chunk ${index} for ${file}: ${err.message ?? err}${detail}`
+  );
+}
 
 async function loadPdf(filePath: string) {
   const buf = await fs.readFile(filePath);
@@ -102,19 +117,20 @@ async function ingest() {
       const content = chunk.content;
       const embedding = await embedText(content);
 
-      const { error } = await supabase.from("research_chunks").insert({
-        report_id: reportId,
-        report_title: reportTitle,
-        page_number: null,
-        content,
-        embedding
-      });
+      try {
+        const { error } = await supabase.from("research_chunks").insert({
+          report_id: reportId,
+          report_title: reportTitle,
+          page_number: null,
+          content,
+          embedding
+        });
 
-      if (error) {
-        console.error(
-          `Failed to insert chunk ${index} for ${file}:`,
-          error.message
-        );
+        if (error) {
+          logInsertError(file, index, error as { message?: string; cause?: unknown });
+        }
+      } catch (err) {
+        logInsertError(file, index, err as { message?: string; cause?: unknown });
       }
     }
   }
