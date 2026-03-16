@@ -23,14 +23,33 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const PDF_INPUT_DIR = path.join(process.cwd(), "data", "pdfs");
 
+/** Verify Supabase credentials before ingesting; exit with clear message if invalid. */
+async function verifySupabaseAccess(): Promise<void> {
+  const { error } = await supabase.from("research_chunks").select("id").limit(1);
+  if (error) {
+    if (error.message === "Invalid API key" || (error as { code?: string }).code === "PGRST301") {
+      console.error(
+        "Supabase rejected the request: Invalid API key.\n" +
+          "  → Check SUPABASE_SERVICE_ROLE_KEY in .env.local (Project Settings → API → service_role secret).\n" +
+          "  → Ensure there are no extra spaces, quotes, or newlines in the value."
+      );
+    } else {
+      console.error("Supabase error:", error.message);
+    }
+    process.exit(1);
+  }
+}
+
 /** Log underlying cause of a fetch/network error so we can diagnose. */
 function logInsertError(file: string, index: number, err: { message?: string; cause?: unknown }) {
+  const msg = err.message ?? String(err);
+  const fromSupabase = msg === "Invalid API key" ? " (Supabase: check SUPABASE_SERVICE_ROLE_KEY in .env.local)" : "";
   const cause = (err as { cause?: { message?: string; code?: string } }).cause;
   const detail = cause
     ? ` (cause: ${cause.code ?? "unknown"} ${cause.message ?? ""})`.trim()
     : "";
   console.error(
-    `Failed to insert chunk ${index} for ${file}: ${err.message ?? err}${detail}`
+    `Failed to insert chunk ${index} for ${file}: ${msg}${fromSupabase}${detail}`
   );
 }
 
@@ -96,6 +115,8 @@ function chunkText(fullText: string, opts?: { maxTokens?: number }): Chunk[] {
 }
 
 async function ingest() {
+  await verifySupabaseAccess();
+
   const entries = await fs.readdir(PDF_INPUT_DIR);
   const pdfFiles = entries.filter((f) => f.toLowerCase().endsWith(".pdf"));
 
