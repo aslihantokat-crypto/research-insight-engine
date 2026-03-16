@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseClient } from "../../lib/supabase-server";
-import { embedQuery } from "../../lib/embeddings";
-import { generateGroundedSummary } from "../../lib/summarize";
+import { getSupabaseClient } from "../../../lib/supabase-server";
+import { embedQuery } from "../../../lib/embeddings";
+import { generateGroundedSummary } from "../../../lib/summarize";
 
 const DEFAULT_TOP_K = 10;
 
