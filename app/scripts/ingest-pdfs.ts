@@ -3,7 +3,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 // Load .env.local so ingest uses the same env as Next.js (dotenv/config only loads .env)
+// Support running from either `app/` or repo root.
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
+dotenv.config({ path: path.join(process.cwd(), "..", ".env.local") });
 dotenv.config();
 import { embedText } from "../lib/embeddings";
 import { createClient } from "@supabase/supabase-js";

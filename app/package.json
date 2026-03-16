@@ -6,10 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "ingest": "ts-node --project tsconfig.scripts.json scripts/ingest-pdfs.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.48.0",
+    "dotenv": "^17.3.1",
     "next": "16.1.6",
+    "openai": "^4.104.0",
+    "pdf-parse": "^2.4.5",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
@@ -20,7 +25,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "make-error": "^1.1.1",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
