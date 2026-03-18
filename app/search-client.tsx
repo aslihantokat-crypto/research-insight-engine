@@ -1,6 +1,6 @@
  "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 type Citation = {
   id: string;
@@ -23,6 +23,48 @@ export default function SearchClient() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<SearchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copiedSummary, setCopiedSummary] = useState(false);
+  const [copiedEvidence, setCopiedEvidence] = useState(false);
+  const copyTimeoutRef = useRef<number | null>(null);
+
+  const topicChips = [
+    "Kart başvuru süreci",
+    "Dashboard tasarımı",
+    "Yatırım fonu",
+    "Buton tasarımı"
+  ];
+
+  const clearCopyTimeout = () => {
+    if (copyTimeoutRef.current) {
+      window.clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = null;
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    const value = text.trim();
+    if (!value) return false;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = value;
+        textarea.setAttribute("readonly", "true");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        return ok;
+      } catch {
+        return false;
+      }
+    }
+  };
 
   const runSearch = async (q: string) => {
     if (!q.trim()) return;
@@ -65,10 +107,26 @@ export default function SearchClient() {
       Math.max(1, evidenceCount)
     : 0;
 
+  const evidenceCopyText = useMemo(() => {
+    if (!result?.citations?.length) return "";
+    return result.citations
+      .map((c, idx) => {
+        const parts = [
+          `Evidence ${idx + 1}: ${c.reportTitle}`,
+          typeof c.pageNumber === "number" ? `Page ${c.pageNumber}` : null,
+          c.url ? `URL: ${c.url}` : null,
+          "",
+          c.excerpt
+        ].filter(Boolean);
+        return parts.join("\n");
+      })
+      .join("\n\n---\n\n");
+  }, [result]);
+
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-12">
-      <section className="space-y-7">
-        <div className="space-y-3">
+    <div className="mx-auto w-full max-w-5xl space-y-10 sm:space-y-12">
+      <section className="space-y-6 sm:space-y-7">
+        <div className="space-y-3 sm:space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="inline-flex items-center rounded-full border border-slate-800 bg-slate-900/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300">
               COMMENCIS RESEARCH INSIGHT ENGINE
@@ -77,10 +135,10 @@ export default function SearchClient() {
               Grounded in internal studies
             </span>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-50 sm:text-4xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-50 sm:text-4xl">
             Ask a question. Get a research-ready answer.
           </h1>
-          <p className="max-w-3xl text-sm leading-relaxed text-slate-400">
+          <p className="max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">
             Generate a deliverable-style summary backed by scannable evidence.
             Every claim is grounded in retrieved excerpts from Commencis
             research repository.
@@ -89,8 +147,8 @@ export default function SearchClient() {
 
         <form onSubmit={handleSearch} className="pt-1">
           <div className="mx-auto w-full max-w-3xl rounded-3xl border border-slate-800 bg-slate-900/40 p-3 shadow-xl shadow-slate-950/30">
-            <div className="flex items-center gap-3 rounded-2xl bg-slate-950/70 px-4 py-4 ring-1 ring-slate-800 focus-within:ring-2 focus-within:ring-indigo-400/70">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/90 text-slate-950 shadow-sm">
+            <div className="flex flex-col gap-3 rounded-2xl bg-slate-950/70 px-4 py-4 ring-1 ring-slate-800 focus-within:ring-2 focus-within:ring-indigo-400/70 sm:flex-row sm:items-center">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/90 text-slate-950 shadow-sm sm:shrink-0">
                 <span className="text-lg" aria-hidden>
                   ⌕
                 </span>
@@ -99,13 +157,13 @@ export default function SearchClient() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Kullanıcıların kart başvuru sürecinde en sık karşılaştıkları kullanılabilirlik sorunları nedir?"
-                className="flex-1 bg-transparent text-base text-slate-50 placeholder:text-slate-500 outline-none"
+                placeholder="Ask anything"
+                className="w-full flex-1 bg-transparent text-base text-slate-50 placeholder:text-slate-500 outline-none sm:w-auto"
               />
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex items-center justify-center rounded-2xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:bg-slate-700"
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:bg-slate-700 sm:w-auto"
               >
                 {isLoading ? "Searching…" : "Search"}
               </button>
@@ -125,6 +183,27 @@ export default function SearchClient() {
             </div>
           </div>
         </form>
+
+        <section className="mx-auto w-full max-w-3xl space-y-2">
+          <p className="px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            Explore topics
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {topicChips.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => {
+                  setQuery(chip);
+                  void runSearch(chip);
+                }}
+                className="rounded-full border border-slate-800 bg-slate-900/30 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-indigo-400/60 hover:bg-slate-900/50 active:scale-[0.98]"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+        </section>
       </section>
 
       <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-800 to-transparent" />
@@ -140,8 +219,8 @@ export default function SearchClient() {
           <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-800 to-transparent" />
 
           <div className="grid gap-6">
-            <section className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6 shadow-xl shadow-slate-950/30">
-              <div className="flex items-start justify-between gap-4">
+            <section className="rounded-3xl border border-slate-800 bg-slate-900/40 p-4 shadow-xl shadow-slate-950/30 sm:p-6">
+              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
                 <div className="space-y-1">
                   <h3 className="text-sm font-semibold text-slate-200">
                     Insight summary
@@ -151,9 +230,26 @@ export default function SearchClient() {
                     it as a draft research readout.
                   </p>
                 </div>
-                <span className="rounded-full border border-slate-800 bg-slate-950/50 px-2.5 py-1 text-[11px] font-medium text-slate-300">
-                  Report draft
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      clearCopyTimeout();
+                      const ok = await copyToClipboard(result.summary);
+                      if (!ok) return;
+                      setCopiedSummary(true);
+                      copyTimeoutRef.current = window.setTimeout(() => {
+                        setCopiedSummary(false);
+                      }, 1400);
+                    }}
+                    className="inline-flex items-center justify-center rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-indigo-400/60 hover:text-white"
+                  >
+                    {copiedSummary ? "Copied ✓" : "Copy insight"}
+                  </button>
+                  <span className="rounded-full border border-slate-800 bg-slate-950/50 px-2.5 py-1 text-[11px] font-medium text-slate-300">
+                    Report draft
+                  </span>
+                </div>
               </div>
 
               <div className="mt-5 grid gap-4">
@@ -203,8 +299,8 @@ export default function SearchClient() {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-800 bg-slate-900/30 p-6">
-              <div className="flex items-start justify-between gap-4">
+            <section className="rounded-3xl border border-slate-800 bg-slate-900/30 p-4 sm:p-6">
+              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
                 <div className="space-y-1">
                   <h3 className="text-sm font-semibold text-slate-200">
                     Evidence
@@ -213,7 +309,22 @@ export default function SearchClient() {
                     Scan by source, then open the report for full context.
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      clearCopyTimeout();
+                      const ok = await copyToClipboard(evidenceCopyText);
+                      if (!ok) return;
+                      setCopiedEvidence(true);
+                      copyTimeoutRef.current = window.setTimeout(() => {
+                        setCopiedEvidence(false);
+                      }, 1400);
+                    }}
+                    className="inline-flex items-center justify-center rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-indigo-400/60 hover:text-white"
+                  >
+                    {copiedEvidence ? "Copied ✓" : "Copy insight"}
+                  </button>
                   <span className="rounded-full bg-slate-950/60 px-2.5 py-1 text-[11px] font-medium text-slate-300">
                     Sorted by relevance
                   </span>

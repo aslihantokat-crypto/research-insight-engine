@@ -26,7 +26,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${mono.variable} antialiased`}>
         {children}
-        <footer className="border-t border-slate-800/70 bg-slate-950/40 py-4 text-center text-xs text-slate-500">
+        <footer className="mt-8 border-t border-slate-800/60 bg-gradient-to-b from-slate-950/0 via-slate-950/30 to-slate-950/60 py-5 text-center text-xs text-slate-400">
           Commencis™️ 2026. All rights reserved.
         </footer>
       </body>
