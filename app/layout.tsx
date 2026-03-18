@@ -23,11 +23,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full bg-slate-950">
       <body
-        className={`${inter.variable} ${mono.variable} min-h-screen antialiased flex flex-col`}
+        className={`${inter.variable} ${mono.variable} h-full min-h-screen bg-slate-950 text-slate-50 antialiased flex flex-col`}
       >
-        <div className="flex-1">{children}</div>
+        <main className="flex-1">{children}</main>
 
         <footer className="mt-24 border-t border-white/5 bg-gradient-to-b from-transparent to-slate-950 py-6">
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
