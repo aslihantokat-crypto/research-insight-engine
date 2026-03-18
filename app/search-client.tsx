@@ -24,15 +24,6 @@ export default function SearchClient() {
   const [result, setResult] = useState<SearchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const exampleQueries = [
-    "How are customers feeling about our latest release?",
-    "What are the biggest onboarding friction points for new users?",
-    "What usability issues do users report about search?",
-    "What are the top drivers of churn mentioned in interviews?",
-    "Summarize the most common complaints about performance.",
-    "What do users love most about the new navigation?",
-  ];
-
   const runSearch = async (q: string) => {
     if (!q.trim()) return;
 
@@ -80,7 +71,7 @@ export default function SearchClient() {
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="inline-flex items-center rounded-full border border-slate-800 bg-slate-900/50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-300">
-              Research Insight Engine
+              COMMENCIS RESEARCH INSIGHT ENGINE
             </p>
             <span className="rounded-full border border-slate-800 bg-slate-900/40 px-3 py-1 text-[11px] font-medium text-slate-300">
               Grounded in internal studies
@@ -91,8 +82,8 @@ export default function SearchClient() {
           </h1>
           <p className="max-w-3xl text-sm leading-relaxed text-slate-400">
             Generate a deliverable-style summary backed by scannable evidence.
-            Every claim is grounded in retrieved excerpts from your research
-            library.
+            Every claim is grounded in retrieved excerpts from Commencis
+            research repository.
           </p>
         </div>
 
@@ -108,7 +99,7 @@ export default function SearchClient() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="How are customers feeling about our latest release?"
+                placeholder="Kullanıcıların kart başvuru sürecinde en sık karşılaştıkları kullanılabilirlik sorunları nedir?"
                 className="flex-1 bg-transparent text-base text-slate-50 placeholder:text-slate-500 outline-none"
               />
               <button
@@ -116,7 +107,7 @@ export default function SearchClient() {
                 disabled={isLoading}
                 className="inline-flex items-center justify-center rounded-2xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:bg-slate-700"
               >
-                {isLoading ? "Searching…" : "Generate"}
+                {isLoading ? "Searching…" : "Search"}
               </button>
             </div>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2 px-2 text-[11px] text-slate-500">
@@ -138,70 +129,6 @@ export default function SearchClient() {
 
       <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-800 to-transparent" />
 
-      <section className="space-y-4">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/30 p-6 shadow-xl shadow-slate-950/20">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="space-y-1">
-                <h2 className="text-sm font-semibold text-slate-200">
-                  Example queries
-                </h2>
-                <p className="text-xs leading-relaxed text-slate-500">
-                  Click to populate the search and run.
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {exampleQueries.map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => {
-                    setQuery(q);
-                    void runSearch(q);
-                  }}
-                  className="group rounded-2xl border border-slate-800 bg-slate-950/40 px-4 py-3 text-left text-sm text-slate-100 hover:border-indigo-400/60 hover:bg-slate-950/60"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="line-clamp-2">{q}</span>
-                    <span className="mt-0.5 text-xs font-semibold text-indigo-300 opacity-0 transition group-hover:opacity-100">
-                      Run
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/30 px-5 py-4">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-                Evidence
-              </p>
-              <p className="mt-1 text-xl font-semibold text-slate-100">
-                {result ? evidenceCount : "—"}
-              </p>
-            </div>
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/30 px-5 py-4">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-                Reports
-              </p>
-              <p className="mt-1 text-xl font-semibold text-slate-100">
-                {result ? uniqueReports : "—"}
-              </p>
-            </div>
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/30 px-5 py-4">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-                Avg relevance
-              </p>
-              <p className="mt-1 text-xl font-semibold text-slate-100">
-                {result ? avgScore.toFixed(2) : "—"}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {error && (
         <div className="rounded-2xl border border-red-900/60 bg-red-950/60 px-4 py-3 text-sm text-red-200">
           {error}
@@ -212,7 +139,7 @@ export default function SearchClient() {
         <section className="space-y-4">
           <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-800 to-transparent" />
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+          <div className="grid gap-6">
             <section className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6 shadow-xl shadow-slate-950/30">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
