@@ -138,7 +138,7 @@ export default function SearchClient() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-50 sm:text-4xl">
             Ask a question. Get a research-ready answer.
           </h1>
-          <p className="max-w-3xl text-sm leading-relaxed text-slate-400 sm:text-base">
+          <p className="w-full text-sm leading-relaxed text-slate-400 sm:text-base">
             Generate a deliverable-style summary backed by scannable evidence.
             Every claim is grounded in retrieved excerpts from Commencis
             research repository.
@@ -195,9 +195,8 @@ export default function SearchClient() {
                 type="button"
                 onClick={() => {
                   setQuery(chip);
-                  void runSearch(chip);
                 }}
-                className="rounded-full border border-slate-800 bg-slate-900/30 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-indigo-400/60 hover:bg-slate-900/50 active:scale-[0.98]"
+                className="cursor-pointer rounded-full border border-slate-800 bg-slate-900/30 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-indigo-400/60 hover:bg-slate-900/50 active:scale-[0.98] active:bg-indigo-500/10"
               >
                 {chip}
               </button>
